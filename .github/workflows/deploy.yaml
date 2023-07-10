@@ -1,0 +1,15 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: build
+        run: docker build -t todolist:$GITHUB_RUN_ID .
+      - name: login
+        run: echo ${{ SECRETS.DOCKERHUB_TOKEN }} | docker login -u ${{ SECRETS.DOCKERHUB_USERNAME }} --password-stdin
+      - name: docker push
+        run: docker push todolist:$GITHUB_RUN_ID
+
