@@ -3,7 +3,7 @@ version: "3.8"
 services:
   front:
     image: sermalenk/skypro-front:lesson-34
-    restart: always
+    restart: on-failure
     ports:
       - "80:80"
     depends_on:
@@ -17,7 +17,7 @@ services:
 
 
   collect_static:
-    image: tanyayogini/todolist:latest
+    image: tanyayogini/todolist:$GITHUB_RUN_ID
     env_file: .env
     command: python manage.py collectstatic -c --no-input
     volumes:
@@ -39,7 +39,7 @@ services:
 
 
   migrations:
-    image: tanyayogini/todolist:latest
+    image: tanyayogini/todolist:$GITHUB_RUN_ID
     env_file: .env
 
     depends_on:
@@ -48,7 +48,7 @@ services:
     command: python manage.py migrate
 
   api:
-    image: tanyayogini/todolist:latest
+    image: tanyayogini/todolist:$GITHUB_RUN_ID
     env_file: .env
     environment:
       DB_HOST: db
