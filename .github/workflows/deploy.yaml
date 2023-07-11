@@ -39,6 +39,6 @@ jobs:
             password: ${{ SECRETS.SERVER_PASSWORD }}
             script: |
               cd todolist
-              docker-compose-up -d
+              docker-compose up -d
             
 
