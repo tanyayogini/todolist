@@ -12,4 +12,33 @@ jobs:
         run: echo ${{ SECRETS.DOCKERHUB_TOKEN }} | docker login -u ${{ SECRETS.DOCKERHUB_USERNAME }} --password-stdin
       - name: docker push
         run: docker push tanyayogini/todolist:$GITHUB_RUN_ID
+  deploy:
+      needs: build
+      runs-on: ubuntu-latest
+      steps:
+        - name: checkout
+          uses: action/checout@v2
+        - name: render config
+          run: |
+            mdir deploy
+            cat docker-compose-ci.yaml | envsubst > deploy/docker-compose.yaml
+        - name: copy files to server
+          uses: appleboy/scp-action@master
+          with:
+            host: ${{ SECRETS.SERVER_HOST }}
+            username: ${{ SECRETS>SERVER_USER }}
+            password: ${{ SECRETS.SERVER_PASSWORD }}
+            source: "deploy/docker-compose.yaml"
+            target: todolist
+            strip_component: 1
+        - name: run
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ SECRETS.SERVER_HOST }}
+            username: ${{ SECRETS>SERVER_USER }}
+            password: ${{ SECTRETS.SERVER_PASSWORD }}
+            script: |
+              cd todolist
+              docker-compose-up -d
+            
 
