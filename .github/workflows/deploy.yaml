@@ -30,7 +30,7 @@ jobs:
             password: ${{ SECRETS.SERVER_PASSWORD }}
             source: "deploy/docker-compose.yaml"
             target: todolist
-            strip_component: 1
+            strip_components: 1
         - name: run
           uses: appleboy/ssh-action@master
           with:
