@@ -17,7 +17,7 @@ services:
 
 
   collect_static:
-    image: tanyayogini/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+    image: tanyayogini/todolist:${GITHUB_RUN_ID}
     env_file: .env
     command: python manage.py collectstatic -c --no-input
     volumes:
@@ -39,7 +39,7 @@ services:
 
 
   migrations:
-    image: tanyayogini/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+    image: tanyayogini/todolist:${GITHUB_RUN_ID}
     env_file: .env
 
     depends_on:
@@ -48,7 +48,7 @@ services:
     command: python manage.py migrate
 
   api:
-    image: tanyayogini/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
+    image: tanyayogini/todolist:${GITHUB_RUN_ID}
     env_file: .env
     depends_on:
       migrations:
