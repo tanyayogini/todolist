@@ -1,19 +1,19 @@
 name: CI
 on: [push]
 jobs:
-#  build:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: checkout
-#        uses: actions/checkout@v3
-#      - name: build
-#        run: docker build -t tanyayogini/todolist:$GITHUB_RUN_ID .
-#      - name: login
-#        run: echo ${{ SECRETS.DOCKERHUB_TOKEN }} | docker login -u ${{ SECRETS.DOCKERHUB_USERNAME }} --password-stdin
-#      - name: docker push
-#        run: docker push tanyayogini/todolist:$GITHUB_RUN_ID
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: build
+        run: docker build -t tanyayogini/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID .
+      - name: login
+        run: echo ${{ SECRETS.DOCKERHUB_TOKEN }} | docker login -u ${{ SECRETS.DOCKERHUB_USERNAME }} --password-stdin
+      - name: docker push
+        run: docker push tanyayogini/todolist:$GITHUB_REF_NAME-$GITHUB_RUN_ID
   deploy:
-#      needs: build
+      needs: build
       runs-on: ubuntu-latest
       steps:
         - name: checkout
@@ -33,14 +33,24 @@ jobs:
             source: "deploy/*"
             target: todolist
             strip_components: 1
-#        - name: run
-#          uses: appleboy/ssh-action@master
-#          with:
-#            host: ${{ SECRETS.SERVER_HOST }}
-#            username: ${{ SECRETS.SERVER_USER }}
-#            password: ${{ SECRETS.SERVER_PASSWORD }}
-#            script: |
-#              cd todolist
-#              docker-compose up -d
+        - name: run
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ SECRETS.SERVER_HOST }}
+            username: ${{ SECRETS.SERVER_USER }}
+            password: ${{ SECRETS.SERVER_PASSWORD }}
+            script: |
+              cd todolist
+              docker-compose up -d
+        - name: clean
+          uses: appleboy/ssh-action@master
+          if: always()
+          with:
+            host: ${{ SECRETS.SERVER_HOST }}
+            username: ${{ SECRETS.SERVER_USER }}
+            password: ${{ SECRETS.SERVER_PASSWORD }}
+            script: |
+              docker system prune -f -a
+              
             
 
