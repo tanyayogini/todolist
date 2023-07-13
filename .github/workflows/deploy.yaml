@@ -30,7 +30,7 @@ jobs:
             host: ${{ SECRETS.SERVER_HOST }}
             username: ${{ SECRETS.SERVER_USER }}
             password: ${{ SECRETS.SERVER_PASSWORD }}
-            source: "deploy/docker-compose.yaml"
+            source: "deploy/*"
             target: todolist
             strip_components: 1
 #        - name: run
