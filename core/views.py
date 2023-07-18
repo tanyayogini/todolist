@@ -4,7 +4,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView, \
     UpdateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from core.models import User
@@ -14,6 +14,7 @@ from core.serializers import UserCreateSerializer, UserSerializer, UpdatePasswor
 class UserCreateView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
+    permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         super().perform_create(serializer)
@@ -50,6 +51,7 @@ class ProfileView(RetrieveUpdateDestroyAPIView):
 class UpdatePasswordView(UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UpdatePasswordSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
