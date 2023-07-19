@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView, \
     UpdateAPIView
@@ -21,6 +21,7 @@ class UserCreateView(CreateAPIView):
         login(self.request, user=serializer.user, backend="django.contrib.auth.backends.ModelBackend")
 
 
+
 class UserLoginView(GenericAPIView):
 
     def post(self, request, *args, **kwargs):
@@ -33,6 +34,7 @@ class UserLoginView(GenericAPIView):
             raise AuthenticationFailed("Неправильные логин и/или пароль!")
 
         return Response(UserSerializer(user).data)
+
 
 
 class ProfileView(RetrieveUpdateDestroyAPIView):
