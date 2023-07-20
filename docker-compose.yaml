@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   front:
-    image: sermalenk/skypro-front:lesson-35
+    image: sermalenk/skypro-front:lesson-37
     restart: always
     ports:
       - "80:80"
@@ -62,6 +62,7 @@ services:
     volumes:
       - ./core:/opt/todolist/core
       - ./todolist:/opt/todolist/todolist
+      - ./goal:/opt/todolist/goal
 
 
 volumes:
