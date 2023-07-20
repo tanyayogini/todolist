@@ -29,7 +29,7 @@ class GoalCategoryListView(ListAPIView):
         filters.SearchFilter,
         DjangoFilterBackend
     ]
-    filetset_fields = ["board", "user"]
+    filterset_fields = ["board"]
     ordering_fields = ["title", "created"]
     ordering = ["title"]
     search_fields = ["title"]
