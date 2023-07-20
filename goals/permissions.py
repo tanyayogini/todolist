@@ -52,4 +52,8 @@ class CommentPermission(permissions.BasePermission):
             return BoardParticipant.objects.filter(
                 user=request.user, board=obj.goal.category.board
             ).exists()
-        return obj.user == request.user
+        return BoardParticipant.objects.filter(
+            user=request.user,
+            board=obj.goal.category.board,
+            role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]
+        ).exists()

@@ -18,13 +18,13 @@ class GoalCategoryCreateSerializer(serializers.ModelSerializer):
         if value.is_deleted:
             raise serializers.ValidationError("Нельзя использовать удаленные доски")
 
-        # validated_users = BoardParticipant.objects.filter(
-        #     user=self.context["request"].user,
-        #     board=value,
-        #     role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]).exists()
-        #
-        # if not validated_users:
-        #     raise serializers.ValidationError("Нельзя редактировать категории на чужих досках")
+        validated_users = BoardParticipant.objects.filter(
+            user=self.context["request"].user,
+            board=value,
+            role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]).exists()
+
+        if not validated_users:
+            raise serializers.ValidationError("Нельзя редактировать категории при роли Читатель")
 
         return value
 
@@ -49,10 +49,15 @@ class GoalCreateSerializer(serializers.ModelSerializer):
     def validate_category(self, value):
         if value.is_deleted:
             raise serializers.ValidationError("Нельзя использовать удаленные категории")
-    #
-    #     if value.user != self.context["request"].user:
-    #         raise serializers.ValidationError("Нельзя использовать чужие категории целей")
-    #
+
+        validated_users = BoardParticipant.objects.filter(
+            user=self.context["request"].user,
+            board=value.board,
+            role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]).exists()
+
+        if not validated_users:
+            raise serializers.ValidationError("Нельзя редактировать цели при роли Читатель")
+
         return value
 
 
@@ -71,10 +76,15 @@ class GoalCommentCreateSerializer(serializers.ModelSerializer):
     def validate_goal(self, value):
         if value.status == Goal.Status.archived:
             raise serializers.ValidationError("Нельзя комментировать удаленные цели")
-    #
-    #     if value.user != self.context["request"].user:
-    #         raise serializers.ValidationError("Нельзя комментировать чужие цели")
-    #
+
+        validated_users = BoardParticipant.objects.filter(
+            user=self.context["request"].user,
+            board=value.category.board,
+            role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]).exists()
+
+        if not validated_users:
+            raise serializers.ValidationError("Нельзя писать комментарии при роли Читатель")
+
         return value
 
 
@@ -107,9 +117,6 @@ class BoardParticipantSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
         slug_field="username", queryset=User.objects.all()
     )
-
-    # user = serializers.SlugRelatedField(BoardParticipant, slug_field="username", queryset=User.objects.all())
-    # role = serializers.ChoiceField(required=True, choices=BoardParticipant.editable_choices)
 
     class Meta:
         model = BoardParticipant
