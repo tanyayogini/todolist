@@ -157,3 +157,4 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 BOT_TOKEN = env.str('BOT_TOKEN')
+HOST = env.str('HOST')

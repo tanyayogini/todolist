@@ -64,6 +64,16 @@ services:
       - ./todolist:/opt/todolist/todolist
       - ./goal:/opt/todolist/goal
 
+  bot:
+    build: .
+    env_file: .env
+    environment:
+      DB_HOST: db
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    command: python manage.py runbot
+
 
 volumes:
   todolist:
