@@ -1,3 +1,5 @@
+from typing import Dict
+
 from django.db import transaction
 from rest_framework import serializers
 
@@ -14,7 +16,7 @@ class GoalCategoryCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created", "updated", "user")
         fields = "__all__"
 
-    def validate_board(self, value):
+    def validate_board(self, value: Board) -> Board:
         if value.is_deleted:
             raise serializers.ValidationError("Нельзя использовать удаленные доски")
 
@@ -24,7 +26,7 @@ class GoalCategoryCreateSerializer(serializers.ModelSerializer):
             role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]).exists()
 
         if not validated_users:
-            raise serializers.ValidationError("Нельзя редактировать категории при роли Читатель")
+            raise serializers.ValidationError("Нельзя редактировать категории на чужой доске или при роли Читатель")
 
         return value
 
@@ -46,7 +48,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created", "updated", "user")
         fields = "__all__"
 
-    def validate_category(self, value):
+    def validate_category(self, value: GoalCategory) -> GoalCategory:
         if value.is_deleted:
             raise serializers.ValidationError("Нельзя использовать удаленные категории")
 
@@ -56,7 +58,7 @@ class GoalCreateSerializer(serializers.ModelSerializer):
             role__in=[BoardParticipant.Role.owner, BoardParticipant.Role.writer]).exists()
 
         if not validated_users:
-            raise serializers.ValidationError("Нельзя редактировать цели при роли Читатель")
+            raise serializers.ValidationError("Нельзя редактировать цели на чужой доске или при роли Читатель")
 
         return value
 
@@ -73,7 +75,7 @@ class GoalCommentCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created", "updated", "user")
         fields = "__all__"
 
-    def validate_goal(self, value):
+    def validate_goal(self, value: Goal) -> Goal:
         if value.status == Goal.Status.archived:
             raise serializers.ValidationError("Нельзя комментировать удаленные цели")
 
@@ -101,7 +103,7 @@ class BoardCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created", "updated")
         fields = "__all__"
 
-    def create(self, validated_data):
+    def create(self, validated_data: Dict) -> Board:
         user = validated_data.pop("user")
         board = Board.objects.create(**validated_data)
         BoardParticipant.objects.create(
@@ -133,7 +135,7 @@ class BoardSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("id", "created", "updated")
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Board, validated_data: Dict) -> Board:
         owner = validated_data.pop("user")
         old_participants = instance.participants.exclude(user=owner)
         new_participants = validated_data.pop("participants")

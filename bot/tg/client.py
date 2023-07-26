@@ -10,7 +10,7 @@ class TgClient:
     def __init__(self, token: str | None = None):
         self.__token = token if token else settings.BOT_TOKEN
 
-    def __get_url(self, method: str):
+    def __get_url(self, method: str) -> str:
         return f"https://api.telegram.org/bot{self.__token}/{method}"
 
     def _get(self, command: str, **params: Any) -> dict:

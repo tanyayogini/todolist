@@ -130,7 +130,6 @@ STATIC_ROOT = BASE_DIR.joinpath('static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
-#APPEND_SLASH = False
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.vk.VKOAuth2',

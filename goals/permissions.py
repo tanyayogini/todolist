@@ -1,10 +1,12 @@
 from rest_framework import permissions
+from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
 
-from goals.models import BoardParticipant
+from goals.models import BoardParticipant, Board, GoalCategory, Goal, GoalComment
 
 
 class BoardPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: GenericAPIView, obj: Board) -> bool:
         if not request.user.is_authenticated:
             return False
         if request.method in permissions.SAFE_METHODS:
@@ -17,7 +19,7 @@ class BoardPermission(permissions.BasePermission):
 
 
 class CategoryPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: GenericAPIView, obj: GoalCategory) -> bool:
         if not request.user.is_authenticated:
             return False
         if request.method in permissions.SAFE_METHODS:
@@ -30,7 +32,7 @@ class CategoryPermission(permissions.BasePermission):
 
 
 class GoalPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: GenericAPIView, obj: Goal) -> bool:
         if not request.user.is_authenticated:
             return False
         if request.method in permissions.SAFE_METHODS:
@@ -45,7 +47,7 @@ class GoalPermission(permissions.BasePermission):
 
 
 class CommentPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view: GenericAPIView, obj: GoalComment) -> bool:
         if not request.user.is_authenticated:
             return False
         if request.method in permissions.SAFE_METHODS:

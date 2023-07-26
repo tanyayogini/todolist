@@ -8,14 +8,14 @@ class DatesModelMixin(models.Model):
     class Meta:
         abstract = True
 
-    created = models.DateTimeField(verbose_name="Дата создания")
-    updated = models.DateTimeField(verbose_name="Дата последнего обновления")
+    created = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+    updated = models.DateTimeField(auto_now=True, verbose_name="Дата последнего обновления")
 
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.created = timezone.now()
-        self.updated = timezone.now()
-        return super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         self.created = timezone.now()
+    #     self.updated = timezone.now()
+    #     return super().save(*args, **kwargs)
 
 
 class Board(DatesModelMixin):

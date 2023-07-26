@@ -1,4 +1,5 @@
 import time
+from typing import Optional
 
 from django.core.management import BaseCommand
 
@@ -83,7 +84,7 @@ class Command(BaseCommand):
         categories_dict: dict = {category.title: category for category in categories}
         return categories_dict
 
-    def check_category(self, categories_list: list[str], tg_user: TgUser):
+    def check_category(self, categories_list: list[str], tg_user: TgUser) -> Optional[str]:
         categories_str = '\n'.join(categories_list)
         category = ''
         while category not in categories_list:
@@ -104,7 +105,7 @@ class Command(BaseCommand):
 
         return None
 
-    def create_new_goal(self, tg_user: TgUser, category: GoalCategory):
+    def create_new_goal(self, tg_user: TgUser, category: GoalCategory) -> str:
         self.tg_client.send_message(tg_user.telegram_chat_id, f'Название вашей цели?')
         time.sleep(30)
         title = self.tg_client.get_updates().result[-1].message.text
