@@ -1,5 +1,4 @@
-import time
-from typing import Optional
+from typing import Callable, Any
 
 from django.core.management import BaseCommand
 
@@ -8,6 +7,15 @@ from bot.tg.client import TgClient
 from bot.tg.dc import Message
 from goals.models import Goal, GoalCategory
 from todolist.settings import HOST
+from pydantic import BaseModel
+
+
+class FSM(BaseModel):
+    next_handler: Callable
+    data: dict[str, Any] = {}
+
+
+users: dict[int, FSM] = {}
 
 
 class Command(BaseCommand):
@@ -37,31 +45,59 @@ class Command(BaseCommand):
             self.handle_auth_user(tg_user, msg)
 
     def handle_auth_user(self, tg_user: TgUser, msg: Message) -> None:
-        if msg.text and msg.text.startswith('/'):
-            match msg.text:
-                case '/goals':
-                    goals_str = self.get_goals(tg_user=tg_user)
-                    self.tg_client.send_message(msg.message_from.id, goals_str)
-                case '/create':
-                    categories = self.get_categories(tg_user=tg_user)
-                    categories_list = list(categories.keys())
-                    if categories_list:
-                        category = self.check_category(categories_list, tg_user=tg_user)
-                        if category:
-                            goal_link = self.create_new_goal(tg_user=tg_user, category=categories[category])
-                            self.tg_client.send_message(
-                                tg_user.telegram_chat_id,
-                                goal_link)
-                    else:
-                        self.tg_client.send_message(msg.message_from.id,
-                                                    'У Вас нет ни одной категории, невозможно создать цель')
-                case '/cancel':
-                    pass
-
-                case _:
-                    self.tg_client.send_message(msg.message_from.id, 'Неизвестная команда')
+        """Обработка сообщений от авторизованных пользователей"""
+        if msg.text == '/goals':
+            goals_str = self.get_goals(tg_user=tg_user)
+            self.tg_client.send_message(msg.message_from.id, goals_str)
+        elif msg.text == '/create':
+            self.send_categories(tg_user=tg_user)
+        elif msg.text == '/cancel':
+            users.pop(tg_user.telegram_chat_id, None)
+        elif msg.message_from.id in users:
+            users[tg_user.telegram_chat_id].next_handler(tg_user, msg)
         else:
-            self.tg_client.send_message(msg.message_from.id, 'Неизвестная команда без/')
+            self.tg_client.send_message(tg_user.telegram_chat_id, 'Неизвестная команда')
+
+    def send_categories(self, tg_user: TgUser):
+        """Отправка пользователю списка категорий для создания цели"""
+        categories = GoalCategory.objects.filter(user=tg_user.user, is_deleted=False)
+        categories_dict: dict = {category.title: category for category in categories}
+        categories_list = list(categories_dict.keys())
+        if categories_list:
+            categories_str = '\n'.join(categories_list)
+            self.tg_client.send_message(tg_user.telegram_chat_id,
+                                        f'Выберете категорию для создания цели: {categories_str}')
+            users[tg_user.telegram_chat_id] = FSM(next_handler=self.handle_get_category)
+            users[tg_user.telegram_chat_id].data.update({'categories': categories_dict})
+        else:
+            self.tg_client.send_message(tg_user.telegram_chat_id,
+                                        'У Вас нет ни одной категории, невозможно создать цель')
+
+    def handle_get_category(self, tg_user: TgUser, msg):
+        """Получение категории для создания цели от пользователя"""
+        categories_list = list(users[tg_user.telegram_chat_id].data["categories"].keys())
+        if msg.text:
+            if msg.text in categories_list:
+                self.tg_client.send_message(tg_user.telegram_chat_id, "Категория выбрана")
+                self.tg_client.send_message(tg_user.telegram_chat_id, f'Название вашей цели?')
+                users[msg.message_from.id].data.update({"category": msg.text})
+                print(users[msg.message_from.id].data['category'])
+                users[msg.message_from.id].next_handler = self.handle_create_goal
+            else:
+                self.tg_client.send_message(tg_user.telegram_chat_id, "У вас нет такой категории")
+                users.pop(tg_user.telegram_chat_id, None)
+                self.send_categories(tg_user=tg_user)
+
+    def handle_create_goal(self, tg_user: TgUser, msg):
+        """Создание новой цели и отправка пользователю ссылки на нее"""
+        if msg.text:
+            category_str = users[tg_user.telegram_chat_id].data.get('category')
+            category = users[tg_user.telegram_chat_id].data["categories"][category_str]
+            goal = Goal.objects.create(category=category, title=msg.text, user=tg_user.user)
+            self.tg_client.send_message(msg.message_from.id,
+                                        f'Цель создана по адресу http://{HOST}/boards/{category.board.pk}'
+                                        f'/categories/{category.id}/goals?goal={goal.pk}')
+            users.pop(msg.message_from.id, None)
 
     def get_goals(self, tg_user: TgUser) -> str:
         goals = Goal.objects.filter(
@@ -78,38 +114,3 @@ class Command(BaseCommand):
             goals_str = 'Цели не найдены'
 
         return goals_str
-
-    def get_categories(self, tg_user: TgUser) -> dict:
-        categories = GoalCategory.objects.filter(user=tg_user.user, is_deleted=False)
-        categories_dict: dict = {category.title: category for category in categories}
-        return categories_dict
-
-    def check_category(self, categories_list: list[str], tg_user: TgUser) -> Optional[str]:
-        categories_str = '\n'.join(categories_list)
-        category = ''
-        while category not in categories_list:
-            self.tg_client.send_message(tg_user.telegram_chat_id,
-                                        f'Выберете категорию для создания цели: {categories_str}')
-            time.sleep(10)
-
-            category_response = self.tg_client.get_updates().result[-1].message.text
-            if category_response in categories_list:
-                category = category_response
-                self.tg_client.send_message(tg_user.telegram_chat_id, "Категория выбрана")
-                return category
-            elif category_response == '/cancel':
-                self.tg_client.send_message(tg_user.telegram_chat_id, "Операция отменена")
-                break
-            else:
-                self.tg_client.send_message(tg_user.telegram_chat_id, "У вас нет такой категории")
-
-        return None
-
-    def create_new_goal(self, tg_user: TgUser, category: GoalCategory) -> str:
-        self.tg_client.send_message(tg_user.telegram_chat_id, f'Название вашей цели?')
-        time.sleep(30)
-        title = self.tg_client.get_updates().result[-1].message.text
-        goal = Goal.objects.create(category=category, title=title, user=tg_user.user)
-        goal_link = f'Цель создана по адресу ' \
-                    f'http://{HOST}/boards/{category.board.pk}/categories/{category.id}/goals?goal={goal.pk}'
-        return goal_link
