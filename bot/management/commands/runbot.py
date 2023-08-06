@@ -81,7 +81,6 @@ class Command(BaseCommand):
                 self.tg_client.send_message(tg_user.telegram_chat_id, "Категория выбрана")
                 self.tg_client.send_message(tg_user.telegram_chat_id, f'Название вашей цели?')
                 users[msg.message_from.id].data.update({"category": msg.text})
-                print(users[msg.message_from.id].data['category'])
                 users[msg.message_from.id].next_handler = self.handle_create_goal
             else:
                 self.tg_client.send_message(tg_user.telegram_chat_id, "У вас нет такой категории")
