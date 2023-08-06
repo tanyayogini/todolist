@@ -2,13 +2,14 @@
 ## Приложение для планирования целей
 **Python 3.11, Django 4.0.1, Postgres**  
 Смотреть приложение: http://158.160.102.66
-[![image](https://github.com/tanyayogini/todolist/assets/109861482/7b88dfcc-8a7f-4866-a0c1-45f807f903e9)
-](https://youtu.be/gMD_GBtYqVM)
+[<img width="1538" alt="Снимок экрана 2023-08-06 в 22 57 30" src="https://github.com/tanyayogini/todolist/assets/109861482/0b8d595c-abf2-417b-87ae-668e7861c258">](https://youtu.be/gMD_GBtYqVM)
+
+Демо-видео работы: https://youtu.be/gMD_GBtYqVM
 
 ## Запуск:
 * установить зависимости из файла requirements.txt;
 * заполнить .env (см. .env.example);
-* запустить проект с помощью команды docker-compose up.
+* запустить проект с помощью команды `docker-compose up`.
   
 ## В проекте реализованы:
  * регистрация пользователя;
