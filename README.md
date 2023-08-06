@@ -2,7 +2,9 @@
 ## Приложение для планирования целей
 **Python 3.11, Django 4.0.1, Postgres**  
 Смотреть приложение: http://158.160.102.66
-[<img width="1538" alt="image" src="https://github.com/tanyayogini/todolist/assets/109861482/3ec7d42b-5087-4e10-a9cc-1e851d31748c">](https://youtu.be/gMD_GBtYqVM)
+[![image](https://github.com/tanyayogini/todolist/assets/109861482/7b88dfcc-8a7f-4866-a0c1-45f807f903e9)
+](https://youtu.be/gMD_GBtYqVM)
+
 ## Запуск:
 * установить зависимости из файла requirements.txt;
 * заполнить .env (см. .env.example);
